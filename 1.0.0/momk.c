@@ -11,33 +11,30 @@ static const char *compiler_header[] =
 {
 	"# Simply replace CC with your own compiler\n",
 	"# if it doesn't match the ones listed below.\n\n",
-	"#CC = i586-pc-msdosdjgpp-gcc\n",
-	"#CC = i686-w64-mingw32-gcc\n",
-	"#CC = x86_64-w64-mingw32-gcc\n"
+	"#CC = i586-pc-msdosdjgpp-g[cc/++]\n",
+	"#CC = i686-w64-mingw32-g[cc/++]\n",
+	"#CC = x86_64-w64-mingw32-g[cc/++]\n"
 };
 
-static const char *ext[]  = { ".c", ".cpp" };
+static const char *default_cc[] = { "gcc", "g++" };
 
-static const char *mk_vars[] 	  = { "CC", "CFLAGS", "RM", "BDIR", "ODIR", "SDIR", "BIN", "OBJ", "SOURCE" };
-static const char *mk_labels[]	  = { ".PHONY", "all", "clean" };
+static const char *warn_flags[] = { "-Wall ", "-Wextra ", "-Wpedantic ", "-Werror " };
+static const char *opt_flags[]	= { "-O1 ", "-O2 ", "-O3 ", "-Os ", "-Ofast " };
+static const char *debug_flag	= "-g ";
 
-static const char *default_cc[]   = { "gcc", "g++" };
-static const char *default_del	  = "rm";
-
-static const char *default_dir[]  = { "bin/", "obj/", "lib/", "src/" };
-
-static const char *warn_flags[]   = { "-Wall ", "-Wextra ", "-Wpedantic ", "-Werror " };
-static const char *opt_flags[]	  = { "-O1 ", "-O2 ", "-O3 ", "-Os ", "-Ofast " };
-static const char *debug_flag	  = "-g ";
-
-static const char *modern_c 	  = "-std=c2x ";
-static const char *modern_cpp	  = "-std=c++23 ";
+static const char *modern_c 	= "-std=c2x ";
+static const char *modern_cpp 	= "-std=c++23 ";
 
 typedef unsigned short flag_t;
 typedef struct momkcontext
 {
 	flag_t wants;
-	char *project_name, *compiler, *compiler_flags, *rm, *labels;
+	char *project_name;
+	char *compiler;
+	char *compiler_flags;
+	char *misc_labels;
+	char *dirs;
+	char *recipe;
 
 } momk;
 
@@ -51,46 +48,31 @@ enum { IS_CPP    = (1 << 0), IS_MULTI      = (1 << 1), IS_MODERN = (1 << 2),
        DEBUG_SYM = (1 << 3), WARN_AS_ERROR = (1 << 4), OPTIMIZE  = (1 << 5),
        OPTI_FAST = (1 << 6), OPTI_SIZE	   = (1 << 7), ALL_WARN	 = (1 << 8) };
 
-constexpr size_t buffer_size = 256;
-constexpr size_t smaller_buf = (buffer_size / 4);
+constexpr size_t buf_size = 256;
+constexpr size_t line_buf = 32;
+constexpr size_t var_buf = 16;
 
 //////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS BEGIN HERE
 //////////////////////////////////////////////////////////////////////////////
 
-// Helper functions
-static inline void make_var   (char *dest, const char *src) 			  { snprintf(dest, smaller_buf / 4, "$(%s)", src); }
-static inline void make_equals(char *dest, const char *first, const char *second) { snprintf(dest, smaller_buf, "%s = %s", first, second ); }
-
 void assemble_cc(char *buffer, flag_t *flags)
 {
 	if(flags == nullptr || buffer == nullptr) return;
-	make_equals(buffer, mk_vars[0], test(flags, IS_CPP) ? default_cc[1] : default_cc[0]);
+	snprintf(buffer, line_buf, "CC = %s\nRM = rm", test(flags, IS_CPP) ? default_cc[1] : default_cc[0]);
 }
 
-void assemble_rm(char *buffer, const char *rm)
+void assemble_dirs(char *buffer, const char *project, flag_t *flags)
 {
-	if(buffer == nullptr || rm == nullptr) return;
-	make_equals(buffer, mk_vars[2], rm);
-}
+	if(buffer == nullptr || !test(flags, IS_MULTI)) return;
 
-void assemble_mk_labels(char *buffer, const char *project, flag_t *flags)
-{
-	if(buffer == nullptr || project == nullptr) return;
-	snprintf(buffer, smaller_buf, "%s: %s %s\n%s: %s\n", mk_labels[0], mk_labels[1], mk_labels[2], mk_labels[1], project);
+	char target[var_buf] = {0};
 
-	constexpr size_t var_size = (smaller_buf / 4);
-	char format[smaller_buf] = {0}, rm_var[var_size] = {0}, bin_var[var_size] = {0}, obj_var[var_size] = {0};
-
-	make_var(rm_var, mk_vars[2]);
-	make_var(bin_var, mk_vars[6]);
-	make_var(obj_var, mk_vars[7]);
-
-	if(test(flags, IS_MULTI)) snprintf(format, smaller_buf, "%s:\n\t%s -rf %s %s", mk_labels[2], rm_var, bin_var, obj_var);
-	else 			  snprintf(format, smaller_buf, "%s:\n\t%s -rf *.o %s\n", mk_labels[2], rm_var, project);
-
-	strncat(buffer, format, smaller_buf);
-	return;
+	strncpy(buffer, "BDIR = bin\nODIR = obj\nSDIR = src\n\n", buf_size);
+	strncat(buffer, "SOURCE = $(shell find src/*.c -printf \"%f \")\n", buf_size);
+	snprintf(target, var_buf, "TARGET = %s\n\n", project);
+	strncat(buffer, target, buf_size);
+	strncat(buffer, "BIN = $(TARGET:%=$(BDIR)/%)\nOBJ = $(SOURCE:%.c=$(ODIR)/%.o)", buf_size);
 }
 
 void assemble_ccflags(char *buffer, flag_t *flags)
@@ -98,10 +80,8 @@ void assemble_ccflags(char *buffer, flag_t *flags)
 	if(flags == nullptr) return;
 
 	bool isplus = test(flags, IS_CPP);
-	// Assemble the first part of the variable assignment
-	// e.g. "CC = "
-	snprintf(buffer, buffer_size, "%s = ", mk_vars[1]);
-	// Then the gauntlet
+	snprintf(buffer, buf_size, "CFLAGS = ");
+
 	if(test(flags, ALL_WARN))
 	{
 		strcat(buffer, warn_flags[0]);
@@ -109,13 +89,57 @@ void assemble_ccflags(char *buffer, flag_t *flags)
 		strcat(buffer, warn_flags[2]);
 	}
 
-	if	(test(flags, WARN_AS_ERROR))	    strncat(buffer, warn_flags[3], buffer_size);
-	if	(test(flags, IS_MODERN) &&  isplus) strncat(buffer, modern_cpp, buffer_size);
-	else if (test(flags, IS_MODERN) && !isplus) strncat(buffer, modern_c, buffer_size);
-	if	(test(flags, DEBUG_SYM))	    strncat(buffer, debug_flag, buffer_size);
-	if	(test(flags, OPTIMIZE))		    strncat(buffer, opt_flags[1], buffer_size);
-	else if (test(flags, OPTI_SIZE))	    strncat(buffer, opt_flags[3], buffer_size);
-	else if (test(flags, OPTI_FAST))	    strncat(buffer, opt_flags[4], buffer_size);
+	if	(test(flags, WARN_AS_ERROR))	    strncat(buffer, warn_flags[3], buf_size);
+	if	(test(flags, IS_MODERN) &&  isplus) strncat(buffer, modern_cpp, buf_size);
+	else if (test(flags, IS_MODERN) && !isplus) strncat(buffer, modern_c, buf_size);
+	if	(test(flags, DEBUG_SYM))	    strncat(buffer, debug_flag, buf_size);
+	if	(test(flags, OPTIMIZE))		    strncat(buffer, opt_flags[1], buf_size);
+	else if (test(flags, OPTI_SIZE))	    strncat(buffer, opt_flags[3], buf_size);
+	else if (test(flags, OPTI_FAST))	    strncat(buffer, opt_flags[4], buf_size);
+
+	return;
+}
+
+void assemble_misc_labels(char *buffer, const char *project, flag_t *flags)
+{
+	if(buffer == nullptr || project == nullptr) return;
+	snprintf(buffer, line_buf, ".PHONY: all clean\nall: %s\n", project);
+
+	char format[line_buf] = {0};
+	if(test(flags, IS_MULTI)) snprintf(format, buf_size, "clean:\n\t$(RM) -f $(OBJ) $(BIN)");
+	else 			  snprintf(format, buf_size, "clean:\n\t$(RM) -f *.o %s\n", project);
+
+	strncat(buffer, format, line_buf);
+	return;
+}
+
+void assemble_recipe(char *buffer, const char *project, flag_t *flags)
+{
+	if(buffer == nullptr || project == nullptr) return;
+	char obj_recipe[line_buf] = {0}, bin_recipe[line_buf] = {0};
+
+	strncpy(obj_recipe, "\t$(CC) $^ -o $@ $(CFLAGS) -r\n", line_buf);
+	strncpy(bin_recipe, "\t$(CC) $^ -o $@ $(CFLAGS)\n\n", line_buf);
+
+	if(test(flags, IS_MULTI))
+	{
+		strncpy(buffer, "$(BIN): $(OBJ)\n", buf_size);
+		strncat(buffer, bin_recipe, buf_size);
+		strncat(buffer, "$(OBJ): $(ODIR)/%.o: $(SDIR)/%.c\n", buf_size);
+		strncat(buffer, obj_recipe, buf_size);
+	}
+	else
+	{
+		char obj_line[line_buf] = {0}, bin_line[line_buf] = {0};
+
+		snprintf(obj_line, line_buf, "%s.o: %s.c\n", project, project);
+		snprintf(bin_line, line_buf, "%s: %s.o\n", project, project);
+
+		strncpy(buffer, bin_line, buf_size);
+		strncat(buffer, bin_recipe, buf_size);
+		strncat(buffer, obj_line, buf_size);
+		strncat(buffer, obj_recipe, buf_size);
+	}
 
 	return;
 }
@@ -127,8 +151,9 @@ void cleanup(void)
 	free(context->project_name);
 	free(context->compiler);
 	free(context->compiler_flags);
-	free(context->rm);
-	free(context->labels);
+	free(context->misc_labels);
+	free(context->dirs);
+	free(context->recipe);
 	free(context);
 }
 
@@ -142,15 +167,16 @@ int main(void)
 
 	// Allocate memory for our compiler flags
 	context->wants 		= 0x00;
-	context->project_name	= malloc(11);
-	context->compiler	= malloc(smaller_buf);
-	context->compiler_flags = malloc(buffer_size);
-	context->rm		= malloc(smaller_buf);
-	context->labels		= malloc(smaller_buf);
+	context->project_name	= malloc(var_buf);
+	context->compiler	= malloc(line_buf);
+	context->compiler_flags = malloc(buf_size);
+	context->misc_labels	= malloc(buf_size);
+	context->dirs		= nullptr;
+	context->recipe		= malloc(buf_size);
 
-	if( context->compiler_flags == nullptr || context->project_name == nullptr ||
-	    context->compiler == nullptr       || context->rm == nullptr	   ||
-	    context->labels == nullptr )
+	if( context->compiler_flags == nullptr	|| context->project_name == nullptr ||
+	    context->compiler == nullptr	|| context->misc_labels == nullptr  ||
+	    context->recipe == nullptr )
 		{ perror("momk"); exit(EXIT_FAILURE); }
 
 	atexit(cleanup);
@@ -158,7 +184,7 @@ int main(void)
 	// Set flags that the assemble_ccflags will check
 	setbit(&context->wants, IS_MODERN);
 	//setbit(&context->wants, IS_MULTI);
-	setbit(&context->wants, IS_CPP);
+	//setbit(&context->wants, IS_CPP);
 	setbit(&context->wants, DEBUG_SYM);
 	setbit(&context->wants, ALL_WARN);
 
@@ -166,15 +192,31 @@ int main(void)
 	strncpy(context->project_name, project, 11);
 	assemble_cc(context->compiler, &context->wants);
 	assemble_ccflags(context->compiler_flags, &context->wants);
-	assemble_rm(context->rm, default_del);
-	assemble_mk_labels(context->labels, project, &context->wants);
+
+	if(test(&context->wants, IS_MULTI))
+	{
+		context->dirs = malloc(buf_size);
+		assemble_dirs(context->dirs, project, &context->wants);
+	}
+
+	assemble_misc_labels(context->misc_labels, project, &context->wants);
+	assemble_recipe(context->recipe, project, &context->wants);
 
 	// Final assembly
 	for(size_t i = 0; i < header_length; i++) printf("%s", compiler_header[i]);
 	puts(context->compiler);
 	puts(context->compiler_flags);
-	puts(context->rm);
-	puts(context->labels);
+	putchar('\n');
+
+	if(context->dirs != nullptr)
+	{
+		puts(context->dirs);
+		putchar('\n');
+	}
+
+	puts(context->misc_labels);
+	putchar('\n');
+	puts(context->recipe);
 
 	return 0;
 }
