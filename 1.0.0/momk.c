@@ -126,14 +126,14 @@ void assemble_recipe(char *buffer, const char *project, flag_t *flags)
 	{
 		strncpy(buffer, "$(BIN): $(OBJ)\n", buf_size);
 		strncat(buffer, bin_recipe, buf_size);
-		strncat(buffer, "$(OBJ): $(ODIR)/%.o: $(SDIR)/%.c\n", buf_size);
+		strncat(buffer, "$(OBJ): $(ODIR)/%.o: $(SDIR)/%.%s\n", buf_size, test(flags, IS_CPP) ? ".cpp" : ".c");
 		strncat(buffer, obj_recipe, buf_size);
 	}
 	else
 	{
 		char obj_line[line_buf] = {0}, bin_line[line_buf] = {0};
 
-		snprintf(obj_line, line_buf, "%s.o: %s.c\n", project, project);
+		snprintf(obj_line, line_buf, "%s.o: %s.%s\n", project, project, test(flags, IS_CPP) ? ".cpp" : ".c");
 		snprintf(bin_line, line_buf, "%s: %s.o\n", project, project);
 
 		strncpy(buffer, bin_line, buf_size);
