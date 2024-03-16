@@ -14,4 +14,4 @@ A stripped-down, simplistic Makefile generator created by anson.
 
 (Late March 2024)
 A stripped-down, simplistic Makefile generator created by anson.
-Moved from C to C++
+* Moved from C to C++
