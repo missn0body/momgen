@@ -1,0 +1,35 @@
+A lot of my Makefiles look the same.
+
+This tool will be made to make it easier to standardize my Makefiles
+so that would-be users won't get whiplash when they compare my newer
+projects to my earlier projects.
+
+There's also a lot of things that I would like to do with Makefiles that
+I never thought to do with Makefiles before, like generating a 'man'
+page, generating a release 'tar.gz', or even making a Debian package. I
+realize that my older Makefile generator 'momk' wouldn't cut it, plus
+this increased level of complexity would necessitate less time on managing
+memory and arrays, and more time on thinking and designing, methinks. So
+I switch to C++.
+
+I have also found this family of python scripts and applications called Docopt,
+and unlike GNU's getopt, its method of describing options is self-describing,
+and structured like a typical usage screen for a terminal application, so that
+the input file can also double as a usage/help file. These scripts were too
+finicky for C in my opinion, but C++ has better support for them.
+
+Plus I realize now that in my future professional life, as well in future
+hobby projects, I will be using a lot of libraries with my code, such as cURL,
+OpenMP, OpenACC, SDL, ncurses, CUDA, etc. I want my makefile to have switches
+for such common libaries so that I can specify a flag at the command line,
+and the program will know to add a line such as '-lcurl' onto the CC/CXXFLAGS
+variables. And for any other libraries that are not already known by the
+program, I can add a command-line flag to specify a flag to pass to CC/CXXFLAGS,
+such as '--lib="-lcurl"', or what not. This example syntax is subject to change.
+
+If anyone has similar workflows or similar Makefiles to mine,
+I hope that this product will be useful to them.
+
+The above is subject to change.
+
+- anson <thesearethethingswesaw@gmail.com> 
