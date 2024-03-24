@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	// This program shouldn't function without arguments
 	if(argc < 2) { PrintTo(std::cerr, argv[0], ": too few arguments, try \"--help\"\n"); return -1; }
 
-	static std::ofstream fileobj;
+	//static std::ofstream fileobj;
 	static std::map<std::string, docopt::value> args;
 	static std::string message, projectname;
 	// docopt parsing, using the alternative parsing function so we can capture all
@@ -60,6 +60,9 @@ int main(int argc, char *argv[])
 	// The argument vector represented as a map allows for quick querying that
 	// makes sense when reading, plus I don't want to argue with docopt
 	projectname = args.at("<project_name>").asString();
+
+	std::string returns = AsString(MakeDirVars(), BuildRule(true, true, true), "\n", OtherRule(true, true));
+	Println(returns);
 
 	// TODO uncomment when ready to delete a bunch of test files
 	//fileobj.open(projectname, std::ios::out);
