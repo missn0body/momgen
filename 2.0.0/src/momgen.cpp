@@ -2,8 +2,7 @@
 #include <map>
 
 #include "../lib/print.hpp"
-#include "../lib/strops.hpp"
-#include "../lib/momgen.hpp"
+#include "../lib/makeasm.hpp"
 
 static const char *VERSION = "My Own Makefile GENerator, version 2.0.0";
 static const char USAGE[] =
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
 	// makes sense when reading, plus I don't want to argue with docopt
 	projectname = args.at("<project_name>").asString();
 
-	std::string returns = AsString(MakeDirVars(), BuildRule(true, true, true), "\n", OtherRule(true, true));
+	std::string returns = AsString(MakeDirVars(), MakeSrcObj(true), BuildRule(true, true, true), "\n", OtherRule(true, true));
 	Println(returns);
 
 	// TODO uncomment when ready to delete a bunch of test files

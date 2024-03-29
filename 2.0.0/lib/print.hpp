@@ -10,7 +10,7 @@
 	Made by anson in 2024, see LICENSE for related details
 */
 
-#include "includes.hpp"
+#include <iostream>
 
 // These do not have an std::ostream object specified, so you will have to specify it
 template<typename O> static O& PrintTo (O& o) { return o; }

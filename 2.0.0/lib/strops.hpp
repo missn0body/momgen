@@ -28,7 +28,7 @@ std::string AsString(T&&... t)
 
 // Repeat a string N amount of times
 // Again, saves me from having to both write and read repeated code
-std::string Mult(const std::string &what, std::size_t count)
+static std::string Mult(const std::string &what, std::size_t count)
 {
 	std::string ret;
 	while(count--) ret += what;
