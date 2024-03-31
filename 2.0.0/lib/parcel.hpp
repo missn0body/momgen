@@ -18,7 +18,7 @@ enum { 	IS_CPP    = (1 << 0), IS_MULTI      = (1 << 1), IS_MODERN = (1 << 2),
        	OPTI_FAST = (1 << 6), OPTI_SIZE	    = (1 << 7), ALL_WARN  = (1 << 8),
  	HAS_LIB	  = (1 << 9), WANT_LINT	    = (1 << 10) };
 
-constexpr std::size_t bitsize = 16;
+constexpr std::size_t bitsize = std::numeric_limits<unsigned short>::max();
 struct parcel
 {
 	std::string project, compiler_flags;

@@ -59,8 +59,14 @@ int main(int argc, char *argv[])
 	// The argument vector represented as a map allows for quick querying that
 	// makes sense when reading, plus I don't want to argue with docopt
 	projectname = args.at("<project_name>").asString();
+	static parcel settings(projectname);
 
-	std::string returns = AsString(MakeDirVars(), MakeSrcObj(true), BuildRule(true, true, true), "\n", OtherRule(true, true));
+	settings.set(IS_CPP);
+	settings.set(IS_MULTI);
+	settings.set(WANT_LINT);
+	settings.set(HAS_LIB);
+
+	std::string returns = AsString(MakeDirVars(), MakeSrcObj(settings), BuildRule(settings), "\n", OtherRule(settings));
 	Println(returns);
 
 	// TODO uncomment when ready to delete a bunch of test files

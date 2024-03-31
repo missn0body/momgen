@@ -17,8 +17,9 @@ std::string MakeDirVars(const std::array<std::string, 4> names)
 	return ret;
 }
 
-std::string MakeSrcObj(bool IsCpp)
+std::string MakeSrcObj(const parcel &in)
 {
+	bool IsCpp = in[IS_CPP];
 	std::string ret, SrcsAssign, SrcsDef, ObjsAssign, ObjsDef;
 
 	// $(wildcard $(SDIR)/*.c/*.cpp) /**/
@@ -33,8 +34,9 @@ std::string MakeSrcObj(bool IsCpp)
 	return ret;
 }
 
-std::string BuildRule(bool IsCpp, bool IsMult, bool HasLib)
+std::string BuildRule(const parcel &in)
 {
+	bool IsCpp = in[IS_CPP], IsMult = in[IS_MULTI], HasLib = in[HAS_LIB];
 	std::string ret, AllLabel, BinLabel, BinAct, ObjLabel, ObjAct, DirCheck = "";
 	// all: $(BIN)
 	AllLabel = AsString(ToLabel("all"), " ", BinVar, "\n\n");
@@ -86,9 +88,11 @@ std::string BuildRule(bool IsCpp, bool IsMult, bool HasLib)
 
 // TODO std::string MakeDist(bool IsCpp) {}
 
-std::string OtherRule(bool IsCpp, bool IsMult, bool WantLint)
+std::string OtherRule(const parcel &in)
 {
+	bool IsCpp = in[IS_CPP], IsMult = in[IS_MULTI], WantLint = in[WANT_LINT];
 	std::string ret = AsString(MakeSection("Other"), "\n\n");
+
 	if(WantLint)
 	{
 		// lint: $(SRCS)
