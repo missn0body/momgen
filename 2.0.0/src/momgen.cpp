@@ -33,7 +33,7 @@ this program uses docopt for argument parsing <http://docopt.org/>)";
 int main(int argc, char *argv[])
 {
 	// This program shouldn't function without arguments
-	if(argc < 2) { PrintTo(std::cerr, argv[0], ": too few arguments, try \"--help\"\n"); return -1; }
+	if(argc < 2) { Println(std::cerr, argv[0], ": too few arguments, try \"--help\""); return -1; }
 
 	//static std::ofstream fileobj;
 	static std::map<std::string, docopt::value> args;
@@ -44,13 +44,13 @@ int main(int argc, char *argv[])
 	catch(const docopt::DocoptLanguageError &e)
 	{
 		message = e.what();
-		PrintTo(std::cerr, argv[0], ": DocoptLanguageError caught: ", ToLower(message), "\n");
+		Println(std::cerr, argv[0], ": DocoptLanguageError caught: ", ToLower(message));
 		return -1;
 	}
 	catch(const docopt::DocoptArgumentError &e)
 	{
 		message = e.what();
-		PrintTo(std::cerr, argv[0], ": ", ToLower(message), ", try \"--help\"\n");
+		Println(std::cerr, argv[0], ": ", ToLower(message), ", try \"--help\"");
 		return -1;
 	}
 	catch(const docopt::DocoptExitHelp &e)    { Println(USAGE); return 0; }

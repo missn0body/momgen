@@ -86,7 +86,35 @@ std::string BuildRule(const parcel &in)
 	return ret;
 }
 
-// TODO std::string MakeDist(bool IsCpp) {}
+std::string MakeDist(const parcel &in)
+{
+	/*
+		TODO
+
+		dist: clean
+		dist: all
+		dist: $(DDIR)/$(BIN).7
+			gzip -vk $<
+			tar -czvf $(BIN)-$(VERSION).tar.gz $(BDIR)/$(BIN) $(DDIR)/* ../README.md ../LICENSE --transform 's,^,$(BIN)-$(VERSION)/,'
+			md5sum $(BIN)-$(VERSION).tar.gz
+
+		self: clean
+		self: all
+		self: $(DDIR)/$(BIN).7
+			gzip -vk $<
+			sudo mkdir /usr/local/man/man7/ -p
+			sudo mv $(BDIR)/$(BIN) /usr/local/bin/
+			sudo mv $(DDIR)/$(BIN).7.gz /usr/local/man/man7/
+			sudo mandb -q
+	*/
+
+	bool IsCpp = in[IS_CPP];
+	std::string ret;
+
+	auto t = [](auto &str) { return AsString("\t", str); };
+
+	return ret;
+}
 
 std::string OtherRule(const parcel &in)
 {
