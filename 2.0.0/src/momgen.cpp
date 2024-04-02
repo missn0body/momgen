@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	settings.set(WANT_LINT);
 	settings.set(HAS_LIB);
 
-	std::string returns = AsString(MakeDirVars(), MakeSrcObj(settings), BuildRule(settings), "\n", OtherRule(settings));
+	std::string returns = AsString(MakeDirVars(), MakeSrcObj(settings), BuildRule(settings), MakeDist(), OtherRule(settings));
 	Println(returns);
 
 	// TODO uncomment when ready to delete a bunch of test files

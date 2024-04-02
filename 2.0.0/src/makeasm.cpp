@@ -82,37 +82,58 @@ std::string BuildRule(const parcel &in)
 
 	// Adding a library if it is necessary
 	if(HasLib) BinAct += AsString(" ", ToVar("LIBFLAGS"));
-	ret += AsString(MakeSection("Building"), "\n\n", AllLabel, BinLabel, BinAct, "\n\n", ObjLabel, ObjAct, "\n\n", DirCheck);
+	ret += AsString(MakeSection("Building"), "\n\n", AllLabel, BinLabel, BinAct, "\n\n", ObjLabel, ObjAct, "\n\n", DirCheck, "\n");
 	return ret;
 }
 
-std::string MakeDist(const parcel &in)
+std::string MakeDist(void)
 {
-	/*
-		TODO
+	std::string ret = AsString(MakeSection("Distribution"), "\n\n");
+	std::string DistLabels, DistAct, SelfLabels, SelfAct;
 
+	// $(DDIR)/$(BIN).7
+	std::string ManSource = AsString(ToVar("DDIR"), "/", ToVar("BIN"), ".7");
+	std::string Compress = "gzip -vk $<", BinVersion = AsString(BinVar, "-", ToVar("VERSION"));
+
+	/*
 		dist: clean
 		dist: all
 		dist: $(DDIR)/$(BIN).7
-			gzip -vk $<
-			tar -czvf $(BIN)-$(VERSION).tar.gz $(BDIR)/$(BIN) $(DDIR)/* ../README.md ../LICENSE --transform 's,^,$(BIN)-$(VERSION)/,'
-			md5sum $(BIN)-$(VERSION).tar.gz
+	*/
+	DistLabels = AsString(ToLabel("dist"), " clean\n", ToLabel("dist"), " all\n", ToLabel("dist"), " ", ManSource, "\n");
 
+	/*
 		self: clean
 		self: all
 		self: $(DDIR)/$(BIN).7
-			gzip -vk $<
-			sudo mkdir /usr/local/man/man7/ -p
-			sudo mv $(BDIR)/$(BIN) /usr/local/bin/
-			sudo mv $(DDIR)/$(BIN).7.gz /usr/local/man/man7/
-			sudo mandb -q
 	*/
+	SelfLabels = AsString(ToLabel("self"), " clean\n", ToLabel("self"), " all\n", ToLabel("self"), " ", ManSource, "\n");
 
-	bool IsCpp = in[IS_CPP];
-	std::string ret;
+	DistAct = AsString("\t", Compress, "\n");
+	SelfAct = AsString("\t", Compress, "\n");
 
-	auto t = [](auto &str) { return AsString("\t", str); };
+	// tar -czvf $(BIN)-$(VERSION).tar.gz $(BDIR)/$(BIN) $(DDIR)/* ../README.md ../LICENSE --transform 's,^,$(BIN)-$(VERSION)/,' */
+	DistAct += AsString(
+				"\ttar -czvf ",
+				BinVersion, ".tar.gz ",
+				ToVar("BDIR"), "/", BinVar, " ",
+				ToVar("DDIR"), "/*", // */
+				"../README.md ../LICENSE --transform ",
+				"'s,^,", BinVersion, "/,'\n"
+			     );
+	// md5sum $(BIN)-$(VERSION).tar.gz
+	DistAct += AsString("\tmd5sum ", BinVersion, ".tar.gz\n\n");
 
+	// sudo mkdir /usr/local/man/man7/ -p
+	SelfAct += "\tsudo mkdir /usr/local/man/man7/ -p\n";
+	// sudo mv $(BDIR)/$(BIN) /usr/local/bin/
+	SelfAct += AsString("\tsudo mv ", ToVar("BDIR"), "/", BinVar, " /usr/local/bin\n");
+	// sudo mv $(DDIR)/$(BIN).7.gz /usr/local/man/man7/
+	SelfAct += AsString("\tsudo mv ", ToVar("DDIR"), "/", BinVar, ".7.gz /usr/local/man/man7/\n");
+	// sudo mandb -q
+	SelfAct += "\tsudo mandb -q\n\n";
+
+	ret += AsString(DistLabels, DistAct, SelfLabels, SelfAct);
 	return ret;
 }
 

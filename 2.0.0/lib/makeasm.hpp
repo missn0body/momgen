@@ -18,7 +18,7 @@
 std::string MakeDirVars	(const std::array<std::string, 4> names = defnames);
 std::string MakeSrcObj	(const parcel &in);
 std::string BuildRule	(const parcel &in);
-std::string MakeDist	(const parcel &in);
+std::string MakeDist	(void);
 std::string OtherRule	(const parcel &in);
 
 #endif /* momgen__momgen__hpp */
