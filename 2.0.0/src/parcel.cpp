@@ -1,6 +1,6 @@
 #include "../lib/parcel.hpp"
 
-void parcel::MakeFlags(void)
+std::string parcel::MakeFlags(void)
 {
 	std::string ret;
 
@@ -18,13 +18,13 @@ void parcel::MakeFlags(void)
 	bool only_fast = (test(OPTI_FAST) && !test(OPTIMIZE)  && !test(OPTI_SIZE));
 	bool only_size = (test(OPTI_SIZE) && !test(OPTIMIZE)  && !test(OPTI_FAST));
 
-	if(only_opti) ret.append("-O2 ");
-	if(only_fast) ret.append("-Ofast ");
-	if(only_size) ret.append("-Osize ");
+	if	(only_opti) ret.append("-O2 ");
+	else if (only_fast) ret.append("-Ofast ");
+	else if (only_size) ret.append("-Osize ");
 
 	if(this->flag.test(DEBUG_SYM)) ret.append("-g");
 
 	// Some cleanup because Makefiles can break with trailing whitespace
 	if(ret.back() == ' ') ret.pop_back();
-	this->compiler_flags = ret;
+	return ret;
 }

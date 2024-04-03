@@ -12,20 +12,21 @@ created by anson <thesearethethingswesaw@gmail.com>
 usage:
 	momgen (-h | --help)
 	momgen --version
-	momgen [-acdefMmops] [--lib=<library_name>] <project_name>
+	momgen [-acdeflMmops] <project_name>
+	momgen [-acdeflMmops] <project_name> --lib=<library_name>
 
 options:
-	-a, --all-warn	      include all, extra and pedantic error checking for CFLAGS
-	-d, --debug	      include debugging symbols
-	-e, --error	      include a flag to treat warnings as errors
-	-f, --ofast	      force all optimizations that do not affect speed
-	-M, --modern	      use the latest standard for C or C++
-	-m, --multi	      generate a Makefile for a multi-file project
-	-o, --opti	      attach "-O2" to C/CXXFLAGS
-	-p, --cpp	      signal momgen to make a C++ Makefile rather than C
-	-s, --osize	      force all optimizations that do not affect size
-	--lib=<library_name>  includes an arbitrary library to link with when
-			      compiling, e.g. "--lib=ncurses" for -lncurses
+	-a, --all-warn        include all, extra and pedantic error checking for CFLAGS
+	-d, --debug           include debugging symbols
+	-e, --error           include a flag to treat warnings as errors
+	-f, --ofast           force all optimizations that do not affect speed
+	-l, --lint            generate a linting section in Makefile
+	-M, --modern          use the latest standard for C or C++
+	-m, --multi           generate a Makefile for a multi-file project
+	-o, --opti            attach "-O2" to C/CXXFLAGS
+	-p, --cpp             signal momgen to make a C++ Makefile rather than C
+	-s, --osize           force all optimizations that do not affect size
+	--lib=<library_name>  includes an arbitrary library to link [default: ]
 
 copyright (c) 2024, see LICENSE for related details
 this program uses docopt for argument parsing <http://docopt.org/>)";
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
 
 	//static std::ofstream fileobj;
 	static std::map<std::string, docopt::value> args;
-	static std::string message, projectname;
+	static std::string message;
 	// docopt parsing, using the alternative parsing function so we can capture all
 	// exceptions given to us
 	try { args = docopt::docopt_parse(USAGE, { argv + 1, argv + argc }, true, VERSION); }
@@ -58,15 +59,17 @@ int main(int argc, char *argv[])
 
 	// The argument vector represented as a map allows for quick querying that
 	// makes sense when reading, plus I don't want to argue with docopt
-	projectname = args.at("<project_name>").asString();
-	static parcel settings(projectname);
+	static const std::string projectname = args.at("<project_name>").asString();
+	static const std::string libname = args.at("--lib").asString();
+	static parcel set(projectname);
 
-	settings.set(IS_CPP);
-	settings.set(IS_MULTI);
-	settings.set(WANT_LINT);
-	settings.set(HAS_LIB);
+	if(args.at("--cpp").asBool() == true)   set.set(IS_CPP);
+	if(args.at("--multi").asBool() == true) set.set(IS_MULTI);
+	if(args.at("--lint").asBool() == true)  set.set(WANT_LINT);
+	if(!libname.empty())			set.set(HAS_LIB);
 
-	std::string returns = AsString(MakeDirVars(), MakeSrcObj(settings), BuildRule(settings), MakeDist(), OtherRule(settings));
+	std::string returns = AsString(MakeVars(set, libname), MakeDirVars(), MakeSrcObj(set), BuildRule(set), MakeDist(), OtherRule(set));
+	Println(libname);
 	Println(returns);
 
 	// TODO uncomment when ready to delete a bunch of test files

@@ -14,7 +14,7 @@
 #include "strops.hpp"
 #include "utils.hpp"
 
-// TODO std::string MakeVars(bool IsCpp = false, bool IsMult = false, bool HasLib = false, bool WantLint = false);
+std::string MakeVars	(parcel &in, const std::string &lib);
 std::string MakeDirVars	(const std::array<std::string, 4> names = defnames);
 std::string MakeSrcObj	(const parcel &in);
 std::string BuildRule	(const parcel &in);

@@ -1,6 +1,28 @@
 #include "../lib/makeasm.hpp"
 
-// TODO std::string MakeVars(bool IsCpp, bool IsMult, bool HasLib, bool WantLint) {}
+std::string MakeVars(parcel &in, const std::string &lib)
+{
+	bool IsCpp = in[IS_CPP], HasLib = in[HAS_LIB], WantLint = in[WANT_LINT];
+	std::string ret, Compiler, Flags, Lib, Remove, LAssign, LFlags;
+
+	// VERSION = <insert version number here>
+	ret 	 = AsString(MakeAssign("VERSION", "<insert version number here>"), "\n\n");
+	// CC/CXX = gcc/g++
+	Compiler = IsCpp ? MakeAssign("CXX", "g++\n") : MakeAssign("CC", "gcc\n");
+	// CC/CXXFLAGS = ...
+	Flags    = AsString(MakeAssign(IsCpp ? "CXXFLAGS" : "CFLAGS", in.MakeFlags()), "\n\n");
+	Lib      = (!HasLib || lib.empty()) ? "\n" : MakeAssign("LIBFLAGS", AsString("-l", lib, "\n\n"));
+	Remove   = MakeAssign("RM", "rm\n\n");
+
+	if(WantLint)
+	{
+		LAssign = MakeAssign("LINT", "cppcheck\n");
+		LFlags  = MakeAssign("LINTFLAGS", "--check-level=exhaustive --enable=all --inconclusive --suppress=missingIncludeSystem --verbose\n");
+	}
+
+	ret += AsString(Compiler, Flags, Lib, Remove, LAssign, LFlags, "\n\n");
+	return ret;
+}
 
 std::string MakeDirVars(const std::array<std::string, 4> names)
 {

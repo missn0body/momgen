@@ -21,7 +21,7 @@ enum { 	IS_CPP    = (1 << 0), IS_MULTI      = (1 << 1), IS_MODERN = (1 << 2),
 constexpr std::size_t bitsize = std::numeric_limits<unsigned short>::max();
 struct parcel
 {
-	std::string project, compiler_flags;
+	std::string project;
 	std::bitset<bitsize> flag;
 
 	parcel(const std::string &name) : project(name) { this->flag = 0x00; }
@@ -31,7 +31,7 @@ struct parcel
 	void   set(std::size_t what) { this->flag.set(what); }
 	void reset(std::size_t what) { this->flag.reset(what); }
 
-	void MakeFlags(void);
+	std::string MakeFlags(void);
 };
 
 #endif /* momgen__parcel__hpp */
