@@ -3,16 +3,16 @@
 std::string MakeVars(parcel &in, const std::string &lib)
 {
 	bool IsCpp = in[IS_CPP], HasLib = in[HAS_LIB], WantLint = in[WANT_LINT];
-	std::string ret, Compiler, Flags, Lib, Remove, LAssign, LFlags;
+	std::string ret, Compiler, Flags, Lib, Remove, LAssign, LFlags, BinName;
 
 	// VERSION = <insert version number here>
-	ret 	 = AsString(MakeAssign("VERSION", "<insert version number here>"), "\n\n");
+	ret 	 = AsString(MakeAssign("VERSION", "<insert version number here>"), "\n");
 	// CC/CXX = gcc/g++
 	Compiler = IsCpp ? MakeAssign("CXX", "g++\n") : MakeAssign("CC", "gcc\n");
 	// CC/CXXFLAGS = ...
-	Flags    = AsString(MakeAssign(IsCpp ? "CXXFLAGS" : "CFLAGS", in.MakeFlags()), "\n\n");
-	Lib      = (!HasLib || lib.empty()) ? "\n" : MakeAssign("LIBFLAGS", AsString("-l", lib, "\n\n"));
-	Remove   = MakeAssign("RM", "rm\n\n");
+	Flags    = AsString(MakeAssign(IsCpp ? "CXXFLAGS" : "CFLAGS", in.MakeFlags()), "\n");
+	Lib      = (!HasLib || lib.empty()) ? "" : MakeAssign("LIBFLAGS", AsString("-l", lib, "\n"));
+	Remove   = MakeAssign("RM", "rm\n");
 
 	if(WantLint)
 	{
@@ -20,6 +20,7 @@ std::string MakeVars(parcel &in, const std::string &lib)
 		LFlags  = MakeAssign("LINTFLAGS", "--check-level=exhaustive --enable=all --inconclusive --suppress=missingIncludeSystem --verbose\n");
 	}
 
+	BinName  = MakeAssign("BIN", in.project);
 	ret += AsString(Compiler, Flags, Lib, Remove, LAssign, LFlags, "\n\n");
 	return ret;
 }
@@ -100,11 +101,11 @@ std::string BuildRule(const parcel &in)
 	// $(CC/XX) $(C/XXFLAGS) -c $< -o $@
 	if(IsCpp) ObjAct = AsString("\t", CXXVar, " ", ToVar("CXXFLAGS"), " ");
 	else	  ObjAct = AsString("\t", CCVar, " ", ToVar("CCFLAGS"), " ");
-	ObjAct += "-c $< -o $@";
+	ObjAct += "-c $< -o $@\n";
 
 	// Adding a library if it is necessary
 	if(HasLib) BinAct += AsString(" ", ToVar("LIBFLAGS"));
-	ret += AsString(MakeSection("Building"), "\n\n", AllLabel, BinLabel, BinAct, "\n\n", ObjLabel, ObjAct, "\n\n", DirCheck, "\n");
+	ret += AsString(MakeSection("Building"), "\n\n", AllLabel, BinLabel, BinAct, "\n\n", ObjLabel, ObjAct, "\n", DirCheck, "\n");
 	return ret;
 }
 

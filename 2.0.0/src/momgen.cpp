@@ -1,4 +1,5 @@
 #include <docopt/docopt.h>
+#include <fstream>
 #include <map>
 
 #include "../lib/print.hpp"
@@ -12,12 +13,13 @@ created by anson <thesearethethingswesaw@gmail.com>
 usage:
 	momgen (-h | --help)
 	momgen --version
-	momgen [-acdeflMmops] <project_name>
-	momgen [-acdeflMmops] <project_name> --lib=<library_name>
+	momgen [-acDdeflMmops] <project_name>
+	momgen [-acDdeflMmops] <project_name> --lib=<library_name>
 
 options:
 	-a, --all-warn        include all, extra and pedantic error checking for CFLAGS
 	-d, --debug           include debugging symbols
+	-D, --dist            include a section for compressing and distributing binaries
 	-e, --error           include a flag to treat warnings as errors
 	-f, --ofast           force all optimizations that do not affect speed
 	-l, --lint            generate a linting section in Makefile
@@ -63,18 +65,32 @@ int main(int argc, char *argv[])
 	static const std::string libname = args.at("--lib").asString();
 	static parcel set(projectname);
 
-	if(args.at("--cpp").asBool() == true)   set.set(IS_CPP);
-	if(args.at("--multi").asBool() == true) set.set(IS_MULTI);
-	if(args.at("--lint").asBool() == true)  set.set(WANT_LINT);
-	if(!libname.empty())			set.set(HAS_LIB);
+	auto b = [&](const auto &str) -> bool { return args.at(str).asBool() == true; };
 
-	std::string returns = AsString(MakeVars(set, libname), MakeDirVars(), MakeSrcObj(set), BuildRule(set), MakeDist(), OtherRule(set));
-	Println(libname);
-	Println(returns);
+	if(b("--cpp"))       set.set(IS_CPP);
+	if(b("--multi"))     set.set(IS_MULTI);
+	if(b("--modern"))    set.set(IS_MODERN);
+	if(b("--debug"))     set.set(DEBUG_SYM);
+	if(b("--error"))     set.set(WARN_AS_ERROR);
+	if(b("--opti"))      set.set(OPTIMIZE);
+	if(b("--ofast"))     set.set(OPTI_FAST);
+	if(b("--osize"))     set.set(OPTI_SIZE);
+	if(b("--all-warn"))  set.set(ALL_WARN);
+	if(b("--lint"))	     set.set(WANT_LINT);
+	if(!libname.empty()) set.set(HAS_LIB);
 
 	// TODO uncomment when ready to delete a bunch of test files
 	//fileobj.open(projectname, std::ios::out);
 	//if(!fileobj.good()) { std::perror(argv[0]); return -1; }
+
+	std::string returns = AsString(MakeVars(set, libname));
+
+	if(set[IS_MULTI]) returns += AsString(MakeDirVars(), MakeSrcObj(set));
+	returns += BuildRule(set);
+	if(b("--dist")) returns += MakeDist();
+	returns += OtherRule(set);
+
+	Println(returns);
 
 	// Clean up
 	//fileobj.close();
