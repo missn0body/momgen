@@ -14,7 +14,7 @@ statement for that version.
 
 Usage and options are explained in the first section of `src/momgen.cpp`, and can
 be read by invoking `momgen --help` at the command line. This project is licensed
-under the MIT License, See LICENSE for related details. Issues, bugs, and other
+under the MIT License, see LICENSE for related details. Issues, bugs, and other
 things can be discussed at my E-Mail, <thesearethethingswesaw@gmail.com>
 
 ### v.1.0.0 (Initial release)
@@ -24,7 +24,7 @@ A stripped-down, simplistic Makefile generator created by anson.
 
 ### v.2.0.0 (C++ Upgrade)
 
-(Late March 2024)  
+(Early April 2024)  
 A stripped-down, simplistic Makefile generator created by anson.
 * Moved from C to C++
 * Expanded project structure from one contained file to multiple files in organized folders
