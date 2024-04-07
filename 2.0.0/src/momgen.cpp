@@ -13,8 +13,8 @@ created by anson <thesearethethingswesaw@gmail.com>
 usage:
 	momgen (-h | --help)
 	momgen --version
-	momgen [-acDdeflMmops] <project_name>
-	momgen [-acDdeflMmops] <project_name> --lib=<library_name>
+	momgen [-acDdeflMmoPps] <project_name>
+	momgen [-acDdeflMmoPps] <project_name> --lib=<library_name>
 
 options:
 	-a, --all-warn        include all, extra and pedantic error checking for CFLAGS
@@ -26,6 +26,7 @@ options:
 	-M, --modern          use the latest standard for C or C++
 	-m, --multi           generate a Makefile for a multi-file project
 	-o, --opti            attach "-O2" to C/CXXFLAGS
+	-P, --preview         output to stdout rather than a file
 	-p, --cpp             signal momgen to make a C++ Makefile rather than C
 	-s, --osize           force all optimizations that do not affect size
 	--lib=<library_name>  includes an arbitrary library to link [default: ]
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
 	// This program shouldn't function without arguments
 	if(argc < 2) { Println(std::cerr, argv[0], ": too few arguments, try \"--help\""); return -1; }
 
-	//static std::ofstream fileobj;
+	static std::ofstream fileobj;
 	static std::map<std::string, docopt::value> args;
 	static std::string message;
 	// docopt parsing, using the alternative parsing function so we can capture all
@@ -66,6 +67,7 @@ int main(int argc, char *argv[])
 	static parcel set(projectname);
 
 	auto b = [&](const auto &str) -> bool { return args.at(str).asBool() == true; };
+	bool tostdout = b("--preview");
 
 	if(b("--cpp"))       set.set(IS_CPP);
 	if(b("--multi"))     set.set(IS_MULTI);
@@ -80,8 +82,11 @@ int main(int argc, char *argv[])
 	if(!libname.empty()) set.set(HAS_LIB);
 
 	// TODO uncomment when ready to delete a bunch of test files
-	//fileobj.open(projectname, std::ios::out);
-	//if(!fileobj.good()) { std::perror(argv[0]); return -1; }
+	if(stdout)
+	{
+		fileobj.open(defname, std::ios::out);
+		if(!fileobj.good()) { std::perror(argv[0]); return -1; }
+	}
 
 	std::string returns = AsString(MakeVars(set, libname));
 
@@ -90,9 +95,10 @@ int main(int argc, char *argv[])
 	if(b("--dist")) returns += MakeDist();
 	returns += OtherRule(set);
 
-	Println(returns);
+	if(tostdout) Println(returns);
+	else	     Println(fileobj, returns);
 
 	// Clean up
-	//fileobj.close();
+	if(fileobj.is_open()) fileobj.close();
 	return 0;
 }
