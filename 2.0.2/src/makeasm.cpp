@@ -2,26 +2,30 @@
 
 std::string MakeVars(parcel &in, const std::string &lib)
 {
-	bool IsCpp = in[IS_CPP], HasLib = in[HAS_LIB], WantLint = in[WANT_LINT];
-	std::string ret, Compiler, Flags, Lib, Remove, LAssign, LFlags, BinName;
+	bool IsCpp = in[IS_CPP], HasLib = in[HAS_LIB], WantLint = in[WANT_LINT], WantDist = in[WANT_DIST];
+	std::string ret, Compiler, Flags, Lib, Remove, LAssign, LFlags, BinName, PhonyRule;
+
+	BinName   = MakeAssign("BIN", in.project);
+	PhonyRule = AsString(ToLabel(".PHONY"), " all clean", (WantDist || WantLint) ? "" : "\n");
 
 	// VERSION = <insert version number here>
-	ret 	 = AsString(MakeAssign("VERSION", "<insert version number here>"), "\n");
+	ret 	  = AsString(MakeAssign("VERSION", "<insert version number here>"), "\n");
 	// CC/CXX = gcc/g++
-	Compiler = IsCpp ? MakeAssign("CXX", "g++\n") : MakeAssign("CC", "gcc\n");
+	Compiler  = IsCpp ? MakeAssign("CXX", "g++\n") : MakeAssign("CC", "gcc\n");
 	// CC/CXXFLAGS = ...
-	Flags    = AsString(MakeAssign(IsCpp ? "CXXFLAGS" : "CFLAGS", in.MakeFlags()), "\n");
-	Lib      = (!HasLib || lib.empty()) ? "" : MakeAssign("LIBFLAGS", AsString("-l", lib, "\n"));
-	Remove   = MakeAssign("RM", "rm\n");
+	Flags     = AsString(MakeAssign(IsCpp ? "CXXFLAGS" : "CFLAGS", in.MakeFlags()), "\n");
+	Lib       = (!HasLib || lib.empty()) ? "" : MakeAssign("LIBFLAGS", AsString("-l", lib, "\n"));
+	Remove    = MakeAssign("RM", "rm\n");
 
 	if(WantLint)
 	{
 		LAssign = MakeAssign("LINT", "cppcheck\n");
 		LFlags  = MakeAssign("LINTFLAGS", "--check-level=exhaustive --enable=all --inconclusive --suppress=missingIncludeSystem --verbose\n");
+		PhonyRule += " lint";
 	}
 
-	BinName  = MakeAssign("BIN", in.project);
-	ret += AsString(Compiler, Flags, Lib, Remove, LAssign, LFlags, "\n", BinName, "\n\n");
+	PhonyRule += (WantDist) ? " dist self" : "\n";
+	ret += AsString(Compiler, Flags, Lib, Remove, LAssign, LFlags, "\n", BinName, "\n\n", PhonyRule, "\n\n");
 	return ret;
 }
 

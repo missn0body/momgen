@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 	bool tostdout = b("--preview");
 
 	if(b("--cpp"))       set.set(IS_CPP);
+	if(b("--dist"))	     set.set(WANT_DIST);
 	if(b("--multi"))     set.set(IS_MULTI);
 	if(b("--modern"))    set.set(IS_MODERN);
 	if(b("--debug"))     set.set(DEBUG_SYM);
@@ -88,14 +89,17 @@ int main(int argc, char *argv[])
 	}
 
 	std::string returns = AsString(MakeVars(set, libname));
-
 	if(set[IS_MULTI]) returns += AsString(MakeDirVars(), MakeSrcObj(set));
 	returns += BuildRule(set);
-	if(b("--dist")) returns += MakeDist(set);
+	if(set[WANT_DIST]) returns += MakeDist(set);
 	returns += OtherRule(set);
 
 	if(tostdout) Println(returns);
-	else	     Println(fileobj, returns);
+	else
+	{
+		Println(fileobj, returns);
+		Println("Be sure to replace the VERSION variable in your Makefile.");
+	}
 
 	// Clean up
 	if(fileobj.is_open()) fileobj.close();

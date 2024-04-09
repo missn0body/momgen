@@ -7,16 +7,16 @@
 
 /*
 	A simple, more compact way to store information for momgen
-	Made by anson in <YEAR>, see LICENSE for related details
+	Made by anson in 2024, see LICENSE for related details
 */
 
 #include <bitset>
 #include <limits>
 
-enum { 	IS_CPP    = (1 << 0), IS_MULTI      = (1 << 1), IS_MODERN = (1 << 2),
-       	DEBUG_SYM = (1 << 3), WARN_AS_ERROR = (1 << 4), OPTIMIZE  = (1 << 5),
-       	OPTI_FAST = (1 << 6), OPTI_SIZE	    = (1 << 7), ALL_WARN  = (1 << 8),
- 	HAS_LIB	  = (1 << 9), WANT_LINT	    = (1 << 10) };
+enum { 	IS_CPP    = (1 << 0), IS_MULTI      = (1 << 1),  IS_MODERN = (1 << 2),
+       	DEBUG_SYM = (1 << 3), WARN_AS_ERROR = (1 << 4),  OPTIMIZE  = (1 << 5),
+       	OPTI_FAST = (1 << 6), OPTI_SIZE	    = (1 << 7),  ALL_WARN  = (1 << 8),
+ 	HAS_LIB	  = (1 << 9), WANT_LINT	    = (1 << 10), WANT_DIST = (1 << 11) };
 
 constexpr std::size_t bitsize = std::numeric_limits<unsigned short>::max();
 struct parcel

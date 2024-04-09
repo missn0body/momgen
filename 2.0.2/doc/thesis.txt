@@ -5,10 +5,11 @@ issue a new version with a new fix for now.
 
 There are issues with:
 * Missing BIN variable
+* Linking build rule is not correctly a label like it should
 * CCFLAGS instead of CFLAGS
 * CCFLAGS should be CXXFLAGS
 * BDIR/BIN should change to BIN when making single-file distributions
-* A check needs to be made for a doc/ directory when making dist. rules
+* Stop overwrite of a previous Makefile when previewing the output of momgen
 * No .PHONY rule
 
 I will try to fix these as soon as I can.
