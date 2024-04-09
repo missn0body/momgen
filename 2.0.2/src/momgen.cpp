@@ -5,9 +5,9 @@
 #include "../lib/print.hpp"
 #include "../lib/makeasm.hpp"
 
-static const char *VERSION = "My Own Makefile GENerator, version 2.0.0";
+static const char *VERSION = "My Own Makefile GENerator, version 2.0.2";
 static const char USAGE[] =
-R"(My Own Makefile GENerator (v.2.0.0): a simple C/C++ makefile generator
+R"(My Own Makefile GENerator (v.2.0.2): a simple C/C++ makefile generator
 created by anson <thesearethethingswesaw@gmail.com>
 
 usage:

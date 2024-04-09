@@ -1,4 +1,4 @@
-VERSION = 2.0.0
+VERSION = 2.0.2
 
 CC = g++
 CFLAGS = -Wall -Wextra -Wpedantic -std=c++23 -g -Ofast
