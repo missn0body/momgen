@@ -1,0 +1,18 @@
+I have become aware that there are some bugs
+within the 2.0.0 version of momgen within a few
+hours of using it for myself. Fair enough, so I will
+issue a new version with a new fix for now.
+
+There are issues with:
+* Missing BIN variable
+* CCFLAGS instead of CFLAGS
+* CCFLAGS should be CXXFLAGS
+* BDIR/BIN should change to BIN when making single-file distributions
+* A check needs to be made for a doc/ directory when making dist. rules
+* No .PHONY rule
+
+I will try to fix these as soon as I can.
+
+The above is subject to change.
+
+- anson <thesearethethingswesaw@gmail.com> 
