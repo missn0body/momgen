@@ -1,0 +1,64 @@
+.TH hfgen 7 "June 2024" "Version 2.0.3"
+.SH NAME
+momgen \- My Own Makefile GENerator, for C/C++
+.SH SYNOPSIS
+.B momgen
+.B [-acDdeflMmoPps]
+.I <project_name>
+.PP
+.B momgen
+.B [-acDdeflMmoPps]
+.I <project_name>
+.I [--lib=<library_name>]
+.SH DESCRIPTION
+.B momgen
+generates C and C++ Makefiles with numerous customization options from
+as little user input as possible. These Makefiles can be configured for
+single file and multi-file projects, and can output either to a file, called
+.B Makefile
+or to standard output.
+.PP
+.B momgen
+defaults to the GCC compiler, as well as cppcheck for linting, but the output
+of this program can be edited, much like any other Makefile.
+.PP
+.B momgen
+also features the
+.B "--lib=<library_name>"
+flag, which appends a flag resembling "-l<library_name>" into the variable
+LIBFLAGS, which is then fitted into the compilation rules, e.g. --lib=curses
+becoming "-lcurses", for the curses library.
+.PP
+.B momgen
+is invokable through the terminal.
+.SH OPTIONS
+.IP "-a, --all-warn"
+Include all, extra and pedantic error checking for CFLAGS
+.IP "-d, --debug"
+Include debugging symbols
+.IP "-D, --dist"
+Include a section for compressing and distributing binaries
+.IP "-e, --error"
+Include a flag to treat warnings as errors
+.IP "-f, --ofast"
+Force all optimizations that do not affect speed
+.IP "-l, --lint"
+Generate a linting section in Makefile
+.IP "-M, --modern"
+Use the latest standard for C or C++
+.IP "-m, --multi"
+Generate a Makefile for a multi-file project
+.IP "-o, --opti"
+Attach "-O2" to C/CXXFLAGS
+.IP "-P, --preview"
+Output to stdout rather than a file
+.IP "-p, --cpp"
+Signal momgen to make a C++ Makefile rather than C
+.IP "-s, --osize"
+Force all optimizations that do not affect size
+.IP "--lib=<library_name>"
+Includes an arbitrary library to link
+.SH BUGS
+Slight formatting errors can be present, but no known fatal errors/bugs.
+.SH AUTHORS
+Written by anson <thesearethethingswesaw@gmail.com>

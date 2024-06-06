@@ -1,0 +1,17 @@
+Over some time with using momgen, I have noticed
+some more annoying things with its output, which
+includes:
+
+* A DDIR variable not being generated with
+  single file Makefiles set up with
+  distribution rules
+* Spacing issues with the initial distribution
+  rule
+
+This is a relatively short update, which only
+necessitates the version number incrementing by
+one. I will try to fix these as soon as I can.
+
+The above is subject to change.
+
+- anson <thesearethethingswesaw@gmail.com> 
